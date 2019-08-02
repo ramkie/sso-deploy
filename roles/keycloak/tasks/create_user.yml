@@ -1,0 +1,12 @@
+---
+- name: Ensure group "keycloak" exists
+  become: yes
+  group:
+    name: "{{ keycloak_user }}"
+    state: present
+
+- name: create keycloak user
+  become: yes
+  user:
+    name: "{{ keycloak_user }}"
+    group: "{{ keycloak_user }}"

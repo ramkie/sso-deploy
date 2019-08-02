@@ -1,0 +1,109 @@
+---   
+- name: Clear tx data
+  become_user: "{{ keycloak_user }}"
+  shell: "rm -rf {{ keycloak_path }}/standalone/data/tx-object-store/*"
+
+- name: "Copy the keycloak_HOME/standalone/ directory from the previous installation over the directory in the new installation"
+  become_user: "{{ keycloak_user }}"
+  shell: "rsync -avz {{ keycloak_path }} {{ keycloak_installation_path }}/{{ keycloak_filename.split('.0.GA.zip')[0] }}"
+
+- name: Remove latest softlink from previous version
+  file:
+    path: "{{ keycloak_installation_path }}/latest"
+    state: absent
+
+- name: create new latest softlink
+  become_user: "{{ keycloak_user }}"
+  file:
+    src: "{{ keycloak_installation_path }}/{{ keycloak_filename.split('.0.GA.zip')[0] }}"
+    dest: "{{ keycloak_installation_path }}/latest"
+    state: link
+
+- name: Start migration script
+  become_user: "{{ keycloak_user }}"
+  shell: "bin/jboss-cli.sh --file=bin/migrate-standalone.cli"
+  args:
+    chdir: "{{ keycloak_installation_path }}/latest"
+
+# - name: check migrationStrategy property set to update 
+#   shell: "grep migrationStrategy | grep -c update"
+#   register: check_migrationstrategy
+#   check_mode: no
+#   ignore_errors: yes
+
+# - name: "check migrationStrategy property set to update"
+#   become_user: "{{ keycloak_user }}"
+#   lineinfile:
+#     path: "{{ keycloak_path }}//standalone/configuration/standalone.xml"
+#     line: "property name=\"migrationStrategy\" value=\"update\""
+#     state: present
+#   check_mode: yes
+#   register: conf
+#   failed_when: (conf is failed)
+
+- name: Stop when migrationStrategy not set to update
+  become_user: "{{ keycloak_user }}"
+  shell: "grep migrationStrategy {{ keycloak_installation_path }}/latest/standalone/configuration/standalone.xml | grep -c update"
+  register: checkmyconf
+  # check_mode: no
+  # failed_when: check_mode.failed
+
+- name: Stop playbook when migrationStrategy not set to update
+  debug: msg="migrationStrategy not set to update"
+  failed_when: checkmyconf.stdout == ""
+
+- name: Make oracle directories
+  become_user: "{{ keycloak_user }}"
+  file:
+    path: "{{ keycloak_installation_path }}/latest/modules/system/layers/keycloak/org/{{ item }}"
+    state: directory
+    mode: 0754
+    remote_src: yes
+    owner: "{{ keycloak_user }}"
+    group: "{{ keycloak_user }}"
+  with_items:
+    - "oracle"
+    - "oracle/main"
+
+- name: copy oracle module and jar
+  become_user: "{{ keycloak_user }}"
+  copy:
+    src: "{{ keycloak_installation_path }}/{{ current_keycloak_dir }}/modules/system/layers/keycloak/org/oracle/main/{{ item }}"
+    dest: "{{ keycloak_installation_path }}/latest/modules/system/layers/keycloak/org/oracle/main/"
+    mode: 0754
+    remote_src: yes
+    owner: "{{ keycloak_user }}"
+    group: "{{ keycloak_user }}"
+  with_items:
+    - ojdbc8.jar
+    - module.xml 
+
+- name: Theme migration account
+  become_user: "{{ keycloak_user }}"
+  copy:
+    src: "{{ keycloak_installation_path }}/{{ current_keycloak_dir }}/themes/base/account/{{ item }}"
+    dest: "{{ keycloak_installation_path }}/latest/themes/base/account/"
+    mode: 0754
+    remote_src: yes
+    owner: "{{ keycloak_user }}"
+    group: "{{ keycloak_user }}"
+  with_items:
+    - account.ftl
+    - template.ftl
+
+- name: Theme migration admin
+  become_user: "{{ keycloak_user }}"
+  copy:
+    src: "{{ keycloak_installation_path }}/{{ current_keycloak_dir }}/themes/base/{{ item }}"
+    dest: "{{ keycloak_installation_path }}/latest/themes/base/{{ item }}"
+    mode: 0754
+    remote_src: yes
+    owner: "{{ keycloak_user }}"
+    group: "{{ keycloak_user }}"
+  with_items:
+    - "account/account.ftl"
+    - "account/template.ftl"
+    - "admin/index.ftl"
+    - "email/html/executeActions.ftl"
+    - "email/messages/messages_en.properties"
+    - "login/template.ftl"

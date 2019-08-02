@@ -1,0 +1,15 @@
+[Unit]
+Description=keycloak Systemctl script
+After=network.target
+
+[Service]
+User=keycloak
+Group=keycloak
+Type=idle
+WorkingDirectory={{ keycloak_path }}/bin
+SuccessExitStatus=143
+ExecStart=/bin/bash {{ keycloak_path }}/bin/standalone.sh
+#ExecStop=/bin/bash {{ keycloak_path }}/bin/shutdown.sh
+
+[Install]
+WantedBy=multi-user.target

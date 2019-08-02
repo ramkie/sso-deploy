@@ -1,0 +1,71 @@
+---
+# Install keycloak
+- name: check keycloak installation path exist
+  become: yes
+  stat:
+    path: "{{ keycloak_installation_path }}"
+  register: install_path_stat
+
+- name: Make keycloak directories for installation
+  become: yes
+  file:
+    path: "{{ keycloak_installation_path }}"
+    state: directory
+    owner: "{{ keycloak_user }}"
+    group: "{{ keycloak_user }}"
+    mode: 0750
+  when: install_path_stat.stat.exists == false
+
+## keycloak_patch to be deploy from web console.
+- name: Copy keycloak package to installation path
+  become: yes
+  copy:
+    src: "{{ item }}"
+    dest: "{{ keycloak_installation_path }}"
+    owner: "{{ keycloak_user }}"
+    group: "{{ keycloak_user }}"
+    mode: 0744
+  with_items:
+    - "{{ keycloak_installation_package }}"
+    - "{{ keycloak_patch }}"
+
+- name: Ensure unzip is installed
+  become: yes
+  yum:
+    name: unzip
+    state: present
+
+- name: unzip keycloak package
+  become: yes
+  become_user: "{{ keycloak_user }}"
+  unarchive:
+    remote_src: yes
+    src: "{{ keycloak_installation_path }}/{{ keycloak_installation_package }}"
+    dest: "{{ keycloak_installation_path }}"
+
+- name: Remove keycloak package
+  become: yes
+  file:
+    path: "{{ keycloak_installation_path }}/{{ keycloak_installation_package }}"
+    state: absent
+
+- name: create new latest softlink
+  file:
+    src: "{{ keycloak_installation_path }}/{{ keycloak_untar_package }}"
+    dest: "{{ keycloak_installation_path }}/latest"
+
+- name: check vault folder exist
+  become: yes
+  stat:
+    path: "{{ keycloak_path }}/vault"
+  register: vault_stat
+
+- name: Create vault folder
+  become: yes
+  file:
+    path: "{{ keycloak_path }}/vault"
+    state: directory
+    owner: "{{ keycloak_user }}"
+    group: "{{ keycloak_user }}"
+    mode: 0750
+  when: vault_stat.stat.exists == false

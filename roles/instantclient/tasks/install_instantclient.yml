@@ -1,0 +1,38 @@
+---
+- name: Add LD_LIBRARY_PATH to keycloak .bashrc
+  become: yes
+  lineinfile:
+    dest: "/home/{{ keycloak_user }}/.bashrc"
+    state: present
+    line: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/oracle/12.1/client64/lib
+    regexp: "^export LD_LIBRARY_PATH.*"
+
+- name: Add Oracle InstantClient to PATH in keycloak .bashrc
+  become: yes
+  lineinfile:
+    dest: "/home/{{ keycloak_user }}/.bashrc"
+    state: present
+    line: "export PATH=$PATH:/usr/lib/oracle/12.1/client64/bin"
+
+- name: Source keycloak .bashrc
+  become: yes
+  shell: ". /home/{{ keycloak_user }}/.bashrc"
+
+- name: Add LD_LIBRARY_PATH to devops .bashrc
+  become: yes
+  lineinfile:
+    dest: "/home/devops/.bashrc"
+    state: present
+    line: export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/oracle/12.1/client64/lib
+    regexp: "^export LD_LIBRARY_PATH.*"
+
+- name: Add Oracle InstantClient to PATH in devops .bashrc
+  become: yes
+  lineinfile:
+    dest: "/home/devops/.bashrc"
+    state: present
+    line: "export PATH=$PATH:/usr/lib/oracle/12.1/client64/bin"
+
+- name: Source devops .bashrc
+  become: yes
+  shell: ". /home/devops/.bashrc"

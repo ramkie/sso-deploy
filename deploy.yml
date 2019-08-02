@@ -1,0 +1,40 @@
+---
+- name: Create user
+  hosts: keycloak
+  roles:
+    - {role: keycloak, action: create_user}
+
+- name: Install Java
+  hosts: keycloak
+  roles:
+    - {role: java, action: install_java}
+
+- name: Install instantclient
+  hosts: keycloak
+  roles:
+    - {role: instantclient, action: install_instantclient}
+
+- name: Create schema
+  hosts: keycloak
+  roles:
+    - {role: db_schema, action: create_schema}
+
+- name: Install keycloak
+  hosts: keycloak
+  roles:
+    - {role: keycloak, action: install_keycloak}
+
+- name: Install OJDBC
+  hosts: keycloak
+  roles:
+    - {role: ojdbc, action: install_ojdbc}
+
+- name: Configure keycloak
+  hosts: keycloak
+  roles:
+    - {role: keycloak, action: config_keycloak}
+
+- name: Register keycloak service
+  hosts: keycloak
+  roles:
+    - {role: keycloak, action: keycloak_service}

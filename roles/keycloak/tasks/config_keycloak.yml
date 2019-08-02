@@ -1,0 +1,44 @@
+---
+- name: Check if standalone.xml.bak exists
+  become: yes
+  become_user: "{{ keycloak_user }}"
+  stat:
+    path: "{{ keycloak_path }}/standalone/configuration"
+  register: standalone_xml_bak
+
+- name: Rename standalone.xml to standalone.xml.bak
+  become: yes
+  become_user: "{{ keycloak_user }}"
+  command: "mv {{ keycloak_path }}/standalone/configuration/standalone.xml {{ keycloak_path }}/standalone/configuration/standalone.xml.bak"
+  when: standalone_xml_bak.stat.exists == False
+
+- name: Copy custom standalone.xml to server
+  become: yes
+  template:
+    src: standalone.xml.j2
+    dest: "{{ keycloak_path }}/standalone/configuration/standalone.xml"
+    owner: "{{ keycloak_user }}"
+    group: "{{ keycloak_user }}"
+    mode: 0644
+
+- name: Check if jboss-cli.xml.bak exists
+  become: yes
+  become_user: "{{ keycloak_user }}"
+  stat:
+    path: "{{ keycloak_path }}/bin"
+  register: jbosscli_xml_bak
+
+- name: Rename jboss-cli.xml to jboss-cli.xml.bak
+  become: yes
+  become_user: "{{ keycloak_user }}"
+  command: "mv {{ keycloak_path }}/bin/jboss-cli.xml {{ keycloak_path }}/bin/jboss-cli.xml.bak"
+  when: jbosscli_xml_bak.stat.exists == False
+
+- name: Copy custom jboss-cli.xml to server
+  become: yes
+  template:
+    src: jboss-cli.xml.j2
+    dest: "{{ keycloak_path }}/bin/jboss-cli.xml"
+    owner: "{{ keycloak_user }}"
+    group: "{{ keycloak_user }}"
+    mode: 0644

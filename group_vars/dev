@@ -1,0 +1,12 @@
+---
+server_ip_address: <server_ip_address>
+db_ip_address: <db_ip_address>
+db_port: 1521
+db_sid: <db_sid>
+
+java_download_path: /tmp
+java_binary: jdk-8u192-linux-x64.rpm
+java_home: /usr/java/latest
+
+keycloak_installation_path: /home/keycloak
+keycloak_path: "{{ keycloak_installation_path }}/latest"

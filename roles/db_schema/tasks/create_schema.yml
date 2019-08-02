@@ -1,0 +1,14 @@
+---
+- name: Run keycloakadmin_grant.sql
+  become: yes
+  become_user: "{{ keycloak_user }}"
+  shell: "sqlplus {{ db_sys_user }}/'{{ db_sys_password }}'@{{ db_ip_address }}:{{ db_port }}/{{ db_sid }} as sysdba @/roles/db_schema/files/keycloakadmin_grant.sql > keycloakadmin_grant.txt"
+  args:
+    chdir: "{{ keycloak_installation_path }}"
+  register: keycloakadmin_grant
+  ignore_errors: yes
+
+- name: Fail the playbook when keycloakadmin_grant is failed
+  fail:
+    msg: "keycloakadmin_grant is failed"
+  when: keycloakadmin_grant is failed

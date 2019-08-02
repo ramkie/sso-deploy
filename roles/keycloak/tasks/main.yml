@@ -1,0 +1,15 @@
+---
+- include_tasks: create_user.yml
+  when: action == 'create_user'
+
+- include_tasks: install_keycloak.yml
+  when: action == 'install_keycloak'
+
+- include_tasks: config_keycloak.yml
+  when: action == 'config_keycloak'
+
+- include_tasks: keycloak_service.yml
+  when: action == 'keycloak_service'
+
+- include_tasks: minor_upgrade.yml
+  when: action == 'minor'

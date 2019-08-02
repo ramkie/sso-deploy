@@ -1,0 +1,13 @@
+---
+## USERS
+keycloak_user: "keycloak"
+
+## PATH VARIABLE
+deploy_dir: /tmp
+
+## FILES DESCRIPTION
+keycloak_untar_package: key-cloak-6.0.0
+keycloak_installation_package: keycloak-6.0.0.zip
+#keycloak_patch: 
+#keycloak_eap_adaptor: 
+#keycloak_saml_adaptor: 
